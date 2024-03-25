@@ -8,10 +8,12 @@ import com.android.build.gradle.api.ApplicationVariant
 import com.xml.guard.entensions.GuardExtension
 import com.xml.guard.model.aabResGuard
 import com.xml.guard.model.andResGuard
+import com.xml.guard.model.resChiper
 import com.xml.guard.tasks.FindConstraintReferencedIdsTask
 import com.xml.guard.tasks.MoveDirTask
 import com.xml.guard.tasks.PackageChangeTask
 import com.xml.guard.tasks.XmlClassGuardTask
+import com.xml.guard.tasks.XmlClassGuardWithMappingTask
 import com.xml.guard.transform.StringFogTransform
 import com.xml.guard.utils.AgpVersion
 import org.gradle.api.GradleException
@@ -31,7 +33,6 @@ class XmlClassGuardPlugin : Plugin<Project> {
         checkApplicationPlugin(project)
         println("XmlClassGuard version is $version, agpVersion=${AgpVersion.agpVersion}")
         val guardExt = project.extensions.create("xmlClassGuard", GuardExtension::class.java)
-
         val android = project.extensions.getByName("android") as AppExtension
         project.afterEvaluate {
             android.applicationVariants.all { variant ->
@@ -54,6 +55,7 @@ class XmlClassGuardPlugin : Plugin<Project> {
     private fun Project.createTasks(guardExt: GuardExtension, variant: ApplicationVariant) {
         val variantName = variant.name.capitalize()
         createTask("xmlClassGuard$variantName", XmlClassGuardTask::class, guardExt, variantName)
+        createTask("xmlClassWithMapping$variantName", XmlClassGuardWithMappingTask::class, guardExt, variantName)
         createTask("packageChange$variantName", PackageChangeTask::class, guardExt, variantName)
         createTask("moveDir$variantName", MoveDirTask::class, guardExt, variantName)
         if (guardExt.findAndConstraintReferencedIds) {
@@ -62,6 +64,9 @@ class XmlClassGuardPlugin : Plugin<Project> {
         if (guardExt.findAabConstraintReferencedIds) {
             createAabFindConstraintReferencedIdsTask(variantName)
         }
+//        if (guardExt.findResChiperConstraintReferencedIds) {
+//            createResChiperFindConstraintReferencedIdsTask(variantName)
+//        }
     }
 
     private fun Project.createAndFindConstraintReferencedIdsTask(variantName: String) {
@@ -82,6 +87,16 @@ class XmlClassGuardPlugin : Plugin<Project> {
         val task =
             createTask(taskName, FindConstraintReferencedIdsTask::class, aabResGuard, variantName)
         aabResGuardTask.dependsOn(task)
+    }
+    private fun Project.createResChiperFindConstraintReferencedIdsTask(variantName: String) {
+        val resChiperTaskName = "resChiper$variantName"
+//        println("resChiper Task name : ${resChiperTaskName} , project.tasks : ${project.tasks.names}")
+        val resChiperTask = project.tasks.findByName(resChiperTaskName)
+            ?: throw GradleException("ResChiper plugin required")
+        val taskName = "resChiperFindConstraintReferencedIds$variantName"
+        val task =
+            createTask(taskName, FindConstraintReferencedIdsTask::class, resChiper, variantName)
+        resChiperTask.dependsOn(task)
     }
 
     private fun checkApplicationPlugin(project: Project) {

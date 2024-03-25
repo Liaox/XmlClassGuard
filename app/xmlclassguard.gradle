@@ -6,13 +6,15 @@ xmlClassGuard {
      * 是否查找约束布局的constraint_referenced_ids属性的值，并添加到AabResGuard的白名单中，
      * 是的话，要求你在XmlClassGuard前依赖AabResGuard插件，默认false
      */
-    findAabConstraintReferencedIds = true
+    findAabConstraintReferencedIds = false
 
     /*
      * 是否查找约束布局的constraint_referenced_ids属性的值，并添加到AndResGuard的白名单中，
      * 是的话，要求你在XmlClassGuard前依赖AabResGuard插件，默认false
      */
     findAndConstraintReferencedIds = false
+
+    findResChiperConstraintReferencedIds = false
 
     //混淆映射文件
     mappingFile = file("xml-class-mapping.txt")
@@ -24,4 +26,8 @@ xmlClassGuard {
     moveDir = ["com.ljx.example": "ef.gh",
                "com.ljx.base"   : "zzzz.hhhh",
                "com.ljx.kts"    : "ddd.xxx"]
+    whiteList = [
+            "com.ljx.example.view",
+            "com.ljx.example.activity.MainActivity"
+    ]
 }

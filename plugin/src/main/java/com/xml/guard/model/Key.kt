@@ -7,3 +7,4 @@ package com.xml.guard.model
  */
 const val andResGuard = "andResGuard"
 const val aabResGuard = "aabResGuard"
+const val resChiper = "resChiper"

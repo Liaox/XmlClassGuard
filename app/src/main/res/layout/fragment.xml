@@ -5,7 +5,7 @@
 
 
     <fragment
-        android:name="com.ljx.example.fragment.LoginFragment"
+        android:name="d.D"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

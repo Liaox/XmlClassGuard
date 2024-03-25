@@ -5,11 +5,8 @@
 
     <data>
 
-        <variable
-            name="user"
-            type="com.ljx.base.User" />
 
-        <import type="com.ljx.example.entity.Book" />
+        <import type="b.B" />
 
     </data>
 
@@ -22,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hello World!"
-            android:contentDescription='@{Book.getText()}'
+            android:contentDescription='@{B.getText()}'
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

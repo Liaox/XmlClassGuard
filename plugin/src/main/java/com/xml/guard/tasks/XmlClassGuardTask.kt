@@ -39,14 +39,16 @@ open class XmlClassGuardTask @Inject constructor(
     private val mapping = MappingParser.parse(mappingFile)
     private val hasNavigationPlugin = project.plugins.hasPlugin("androidx.navigation.safeargs")
     private val fragmentDirectionList = mutableListOf<String>()
+    private var whiteList = guardExtension.whiteList
 
     @TaskAction
     fun execute() {
+        println(" whiteList : $whiteList")
         val androidProjects = allDependencyAndroidProjects()
         //1、遍历res下的xml文件，找到自定义的类(View/Fragment/四大组件等)，并将混淆结果同步到xml文件内
         androidProjects.forEach { handleResDir(it) }
         //2、仅修改文件名及文件路径，返回本次修改的文件
-        val classMapping = mapping.obfuscateAllClass(project, variantName)
+        val classMapping = mapping.obfuscateAllClass(project, variantName,whiteList)
         if (hasNavigationPlugin && fragmentDirectionList.isNotEmpty()) {
             fragmentDirectionList.forEach {
                 classMapping["${it}Directions"] = "${classMapping[it]}Directions"
@@ -96,10 +98,20 @@ open class XmlClassGuardTask @Inject constructor(
         for (classInfo in classInfoList) {
             val classPath = classInfo.classPath
             val dirPath = classPath.getDirPath()
+            //白名单包含此路径
+            if (whiteList.contains(dirPath)){
+                println("[whiteList] dirPath: $dirPath")
+                continue
+            }
             //本地不存在这个文件
             if (project.findLocationProject(dirPath, variantName) == null) continue
             //已经混淆了这个类
             if (mapping.isObfuscated(classPath)) continue
+            println("classPath: $classPath , ${dirPath},  ${whiteList.contains(classPath)}")
+            if (whiteList.contains(classPath)){
+                println("[whiteList] path: $classPath")
+                continue
+            }
             val obfuscatePath = mapping.obfuscatePath(classPath)
             xmlText = xmlText.replaceWords(classPath, obfuscatePath)
             if (classPath.startsWith(packageName)) {

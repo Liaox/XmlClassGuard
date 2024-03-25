@@ -32,6 +32,7 @@ open class MoveDirTask @Inject constructor(
     @TaskAction
     fun execute() {
         val moveFile = guardExtension.moveDir
+        println("moveDir is ${moveFile}")
         if (moveFile.isEmpty()) return
         val androidProjects = allDependencyAndroidProjects()
         androidProjects.forEach { it.moveDir(moveFile) }

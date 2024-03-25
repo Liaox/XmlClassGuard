@@ -1,7 +1,7 @@
 package com.ljx.example.fixed;
 
-import com.ljx.example.KtTopTest;
-import com.ljx.example.KtTopTestKt;
+import f.J;
+import f.JKt;
 
 /**
  * User: ljx
@@ -11,7 +11,7 @@ import com.ljx.example.KtTopTestKt;
 public class Fixed {
 
     public Fixed() {
-        KtTopTest topFuncTest = new KtTopTest();
-        KtTopTestKt.getI();
+        J topFuncTest = new J();
+        JKt.getI();
     }
 }

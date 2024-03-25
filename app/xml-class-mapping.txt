@@ -1,7 +1,21 @@
 dir mapping:
-	com.ljx.example -> e
-	com.ljx.example.activity -> dh
+	com.ljx.base -> a
+	com.ljx.example.entity -> b
+	com.ljx.example.view -> c
+	com.ljx.example.fragment -> d
+	com.ljx.example.pre -> e
+	com.ljx.example -> f
+	com.ljx.example.activity -> g
 
 class mapping:
-	com.ljx.example.AppHolder -> e.B
-	com.ljx.example.activity.MainActivity -> dh.C
+	com.ljx.base.User -> a.A
+	com.ljx.example.entity.Book -> b.B
+	com.ljx.example.view.CustomLinearLayoutManager -> c.C
+	com.ljx.example.fragment.LoginFragment -> d.D
+	com.ljx.example.fragment.UserFragment -> d.E
+	com.ljx.example.pre.CustomCheckBoxPreference -> e.F
+	com.ljx.example.AppHolder -> f.G
+	com.ljx.example.activity.LoginActivity -> g.H
+	com.ljx.example.TestInnerClass -> f.I
+	com.ljx.example.KtTopTest -> f.J
+	com.ljx.example.Test -> f.K

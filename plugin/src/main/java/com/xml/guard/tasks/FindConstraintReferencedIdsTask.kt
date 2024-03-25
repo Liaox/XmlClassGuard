@@ -1,9 +1,11 @@
 package com.xml.guard.tasks
 
 import com.bytedance.android.plugin.extensions.AabResGuardExtension
+import com.overseas.reschiper.plugin.Extension
 import com.tencent.gradle.AndResGuardExtension
 import com.xml.guard.model.aabResGuard
 import com.xml.guard.model.andResGuard
+import com.xml.guard.model.resChiper
 import com.xml.guard.utils.findLayoutDirs
 import com.xml.guard.utils.findXmlDirs
 import com.xml.guard.utils.isAndroidProject
@@ -44,6 +46,8 @@ open class FindConstraintReferencedIdsTask @Inject constructor(
             if (andResGuard == extensionName && extension is AndResGuardExtension) {
                 extension.whiteList
             } else if (aabResGuard == extensionName && extension is AabResGuardExtension) {
+                extension.whiteList
+            } else if (resChiper == extensionName && extension is Extension) {
                 extension.whiteList
             } else {
                 throw IllegalArgumentException("extensionName is $extensionName")

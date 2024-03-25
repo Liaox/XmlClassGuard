@@ -1,6 +1,7 @@
 plugins {
     id 'kotlin'
     id 'org.jetbrains.kotlin.jvm'
+//    id 'com.overseas.reschiper'
 }
 
 apply from: 'maven.gradle'
@@ -23,13 +24,14 @@ task copyJavaTemplates(type: Copy) {
 }
 
 dependencies {
+    compileOnly files('lib/plugin-0.1.0-rc4.jar')
     compileOnly gradleApi()
     api 'org.codehaus.groovy:groovy-xml:3.0.13'
     implementation 'org.ow2.asm:asm:9.3'
     compileOnly 'com.android.tools.build:gradle:8.0.2'
     compileOnly "com.bytedance.android:aabresguard-plugin:0.1.10"
     compileOnly 'com.tencent.mm:AndResGuard-gradle-plugin:1.2.21'
-
+//    compileOnly "com.overseas.reschiper:plugin:0.1.0-rc4"
     testImplementation 'junit:junit:4.13.2'
 }
 

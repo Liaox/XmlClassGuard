@@ -11,6 +11,7 @@ import com.xml.guard.utils.javaDirs
 import com.xml.guard.utils.removeSuffix
 import com.xml.guard.utils.toLetterStr
 import com.xml.guard.utils.toUpperLetterStr
+import com.xml.guard.utils.whiteList
 import org.gradle.api.Project
 import java.io.BufferedWriter
 import java.io.File
@@ -40,7 +41,7 @@ class Mapping {
     internal var packageNameIndex = -1L
 
     //遍历文件夹下的所有直接子类，混淆文件名及移动目录
-    fun obfuscateAllClass(project: Project, variantName: String): MutableMap<String, String> {
+    fun obfuscateAllClass(project: Project, variantName: String,whiteList:Set<String>): MutableMap<String, String> {
         val classMapped = mutableMapOf<String, String>()
         val iterator = dirMapping.iterator()
         while (iterator.hasNext()) {
@@ -52,8 +53,12 @@ class Mapping {
                 continue
             }
             val manifestPackage = locationProject.findPackage()
+            println("rawDir:$rawDir")
+            if (whiteList.contains(rawDir)){
+                continue
+            }
             //过滤目录的直接子文件
-            val dirPath = rawDir.replace(".", File.separator) //xx.xx  不带文件名
+            val dirPath = rawDir.replace(".", File.separator) //xx.xx
             val childFiles = locationProject.javaDirs(variantName).flatMap {
                 File(it, dirPath).listFiles { f ->
                     val filename = f.name
@@ -65,6 +70,8 @@ class Mapping {
                 val rawClassPath = "${rawDir}.${file.name.removeSuffix()}" //原始 xx.Xxx
                 //已经混淆
                 if (isObfuscated(rawClassPath)) continue
+                println("rawClassPath:$rawClassPath")
+                if (whiteList.contains(rawClassPath)) continue
                 if (rawDir == manifestPackage) {
                     file.insertImportXxxIfAbsent(manifestPackage)
                 }
@@ -100,6 +107,40 @@ class Mapping {
     }
 
     fun isObfuscated(rawClassPath: String) = classMapping.containsValue(rawClassPath)
+    fun isObfuscatedDir(rawDirPath: String) = dirMapping.containsValue(rawDirPath)
+    fun isInMapping(classPath: String): Boolean {
+
+        dirMapping.forEach { (s, s2) ->
+//            println("dirmap键：$s -> dirmap值：$s2\n$classPath")
+//            println("classpath的值：$classPath")
+            var ss  = splitStringDir(classPath)
+//            println("裁剪之后的值：$ss")
+//            println("包里的值：$s")
+            if (ss == s) {
+                //classpath包含了这个mapping的路径，代表在混淆配置文件里面，则可以混淆
+                return true
+            }
+        }
+        return false
+    }
+
+    private var resu: String = ""
+    fun splitStringDir(classPath: String): String {
+        resu = ""
+        var strArray = classPath.split(".")
+        if (strArray.size >= 2) {
+            for (i in 0 until strArray.size) {
+                if (i == strArray.size - 2) {
+                    resu += strArray[i]
+                } else if(i<strArray.size - 2){
+                    resu += strArray[i] + "."
+                }
+            }
+        }else {
+            resu = classPath
+        }
+        return resu
+    }
 
     //混淆包名+类名，返回混淆后的包名+类名
     fun obfuscatePath(classPath: String): String {

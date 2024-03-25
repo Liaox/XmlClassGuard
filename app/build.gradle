@@ -4,17 +4,23 @@ plugins {
     id 'androidx.navigation.safeargs'
 }
 apply from: 'aabresguard.gradle'
+apply from: 'resChiper.gradle'
 
 apply from: 'xmlclassguard.gradle'
+//apply plugin: 'com.pf.fakedex'
+//fake {
+//    // 加密的密码
+//    key 'asdfasdfasdfasdf'
+//}
 
 android {
     namespace 'com.ljx.example'
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.ljx.example"
         minSdk 21
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -50,11 +56,12 @@ dependencies {
     implementation project(":base")
     implementation project(":kts_test")
     implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.5.3'
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.3'
+//    implementation group: 'com.pf.fakedex', name: 'fakedex', version: '1.0.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

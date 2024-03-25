@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name=".AppHolder"
+        android:name="f.G"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -18,11 +18,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.ljx.example.activity.LoginActivity" />
+        <activity android:name="g.H" />
 
-        <service android:name=".TestInnerClass$NotifyJobService" />
-        <service android:name=".TestInnerClass$P0" />
-        <service android:name=".TestInnerClass$P1" />
+        <service android:name="f.I$NotifyJobService" />
+        <service android:name="f.I$P0" />
+        <service android:name="f.I$P1" />
     </application>
 
 </manifest>
