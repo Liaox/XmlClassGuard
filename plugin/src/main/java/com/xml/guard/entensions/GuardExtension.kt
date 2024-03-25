@@ -37,4 +37,15 @@ open class GuardExtension {
      * 白名单，不混淆的类全路径名称。
      */
     var whiteList: Set<String> = HashSet()
+
+    /**
+     * 修改图片md5时数据结尾添加0的个数。0代表不修改，其他数字代表添加多少个。
+     * 目前只支持jpg或png。
+     */
+    var changeImageMD5Count = 0
+
+    /**
+     * 修改图片md5的白名单。图片名称。
+     */
+    var imageWhiteList:Set<String> = HashSet()
 }

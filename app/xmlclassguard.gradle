@@ -26,8 +26,15 @@ xmlClassGuard {
     moveDir = ["com.ljx.example": "ef.gh",
                "com.ljx.base"   : "zzzz.hhhh",
                "com.ljx.kts"    : "ddd.xxx"]
+    //类名白名单。
     whiteList = [
             "com.ljx.example.view",
             "com.ljx.example.activity.MainActivity"
+    ]
+    //修改图片md5时数据结尾添加0的个数。0代表不修改，其他数字代表添加多少个。
+    changeImageMD5Count = 2
+    //修改图片md5的白名单。图片名称。
+    imageWhiteList = [
+
     ]
 }

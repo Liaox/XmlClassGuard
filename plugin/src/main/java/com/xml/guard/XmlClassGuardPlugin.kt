@@ -10,6 +10,7 @@ import com.xml.guard.model.aabResGuard
 import com.xml.guard.model.andResGuard
 import com.xml.guard.model.resChiper
 import com.xml.guard.tasks.FindConstraintReferencedIdsTask
+import com.xml.guard.tasks.ImageChangeMd5Task
 import com.xml.guard.tasks.MoveDirTask
 import com.xml.guard.tasks.PackageChangeTask
 import com.xml.guard.tasks.XmlClassGuardTask
@@ -67,6 +68,11 @@ class XmlClassGuardPlugin : Plugin<Project> {
 //        if (guardExt.findResChiperConstraintReferencedIds) {
 //            createResChiperFindConstraintReferencedIdsTask(variantName)
 //        }
+        //需要修改图片文件md5.目前仅支持修改jpg或png。
+        if (guardExt.changeImageMD5Count>0){
+            val taskName = "imageChangeMD5$variantName"
+            createTask(taskName, ImageChangeMd5Task::class, guardExt, variantName)
+        }
     }
 
     private fun Project.createAndFindConstraintReferencedIdsTask(variantName: String) {
