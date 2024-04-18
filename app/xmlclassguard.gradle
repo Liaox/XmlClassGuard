@@ -7,7 +7,6 @@ xmlClassGuard {
      * 是的话，要求你在XmlClassGuard前依赖AabResGuard插件，默认false
      */
     findAabConstraintReferencedIds = false
-
     /*
      * 是否查找约束布局的constraint_referenced_ids属性的值，并添加到AndResGuard的白名单中，
      * 是的话，要求你在XmlClassGuard前依赖AabResGuard插件，默认false
@@ -35,6 +34,6 @@ xmlClassGuard {
     changeImageMD5Count = 2
     //修改图片md5的白名单。图片名称。
     imageWhiteList = [
-
+//        "ic_height_white.png"
     ]
 }
