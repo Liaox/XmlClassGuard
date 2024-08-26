@@ -35,6 +35,7 @@ open class ImageChangeMd5Task @Inject constructor(
 
     private var whiteList = guardExtension.imageWhiteList
     private var count = guardExtension.changeImageMD5Count
+    private var changeImagePercent = guardExtension.changeImagePercent
 
     @TaskAction
     fun execute() {
@@ -62,8 +63,27 @@ open class ImageChangeMd5Task @Inject constructor(
         val packageName = project.findPackage()
         //过滤res目录下的drawable,mipmap目录
         val xmlDirs = project.findXmlDirs(variantName, "drawable", "mipmap")
-        project.files(xmlDirs).asFileTree.forEach { xmlFile ->
-            guardImage(project, xmlFile, packageName)
+        val files = project.files(xmlDirs).asFileTree
+        //图片资源总数
+        val count = files.count { isImageFile(it) }
+        if (changeImagePercent>1f){
+            changeImagePercent = 1f
+        }
+        if (changeImagePercent<0){
+            changeImagePercent = 0f
+        }
+        val max = (count*changeImagePercent).toInt()
+        println("图片资源总数量: $count , 修改配置百分比: $changeImagePercent , 可修改数量：$max")
+        if (max <=0){
+            println("修改图片数量为0,请检查是否正确配置图片处理百分比")
+        }
+        var c = 0
+        files.forEachIndexed { index, file ->
+            //只处理配置的百分比数量的图片文件
+            if (isImageFile(file) && c<max){
+                c++
+                guardImage(project, file, packageName)
+            }
         }
     }
 
@@ -71,22 +91,45 @@ open class ImageChangeMd5Task @Inject constructor(
         val parentName = xmlFile.parentFile.name
         println("parentName: $parentName")
         println("file name: ${xmlFile.name}")
-        if (!xmlFile.name.isNullOrEmpty()){
-            if (xmlFile.name.lowercase().endsWith(".png")
-                || xmlFile.name.lowercase().endsWith(".jpg")
-                || xmlFile.name.lowercase().endsWith(".jpeg")){
-                //如果在白名单，
-                if (whiteList.contains(xmlFile.name)){
-                    println("[image whiteList] path: ${xmlFile.name}")
-                    return
-                }
-
-                val byte = ByteArray(count)
-                for (i in 0 until  count) {
-                    byte[i]=0
-                }
-                xmlFile.appendBytes(byte)
+        if (isImageFile(xmlFile)){
+            //如果在白名单，
+            if (whiteList.contains(xmlFile.name)){
+                println("[image whiteList] path: ${xmlFile.name}")
+                return
             }
+            //已编辑过，不处理
+            if (isImageEdited(xmlFile)){
+                println("[image is edit] name: ${xmlFile.name}")
+                return
+            }
+            val byte = ByteArray(count)
+            for (i in 0 until  count) {
+                byte[i]=0
+            }
+            xmlFile.appendBytes(byte)
         }
+    }
+
+    private fun isImageEdited(xmlFile: File):Boolean{
+        val originArray = xmlFile.readBytes()
+        val length = originArray.size
+        if (length>count){
+            for (i in 0 until count) {
+                val b = originArray[length-(i+1)]
+                //有1个byte不是0，就不是已编辑过
+                if (b.toInt() !=0){
+                    return false
+                }
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun isImageFile(file: File):Boolean{
+        val b = !file.name.isNullOrEmpty() && (file.name.lowercase().endsWith(".png")
+                || file.name.lowercase().endsWith(".jpg")
+                || file.name.lowercase().endsWith(".jpeg"))
+        return b
     }
 }

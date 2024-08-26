@@ -45,6 +45,11 @@ open class GuardExtension {
     var changeImageMD5Count = 0
 
     /**
+     * 修改图片数量百分比，最小0，最大1.
+     */
+    var changeImagePercent = 1f
+
+    /**
      * 修改图片md5的白名单。图片名称。
      */
     var imageWhiteList:Set<String> = HashSet()

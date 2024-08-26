@@ -31,7 +31,9 @@ xmlClassGuard {
             "com.ljx.example.activity.MainActivity"
     ]
     //修改图片md5时数据结尾添加0的个数。0代表不修改，其他数字代表添加多少个。
-    changeImageMD5Count = 2
+    changeImageMD5Count = 100
+    //修改图片百分比，最大为1，最小为0
+    changeImagePercent = 0.5f
     //修改图片md5的白名单。图片名称。
     imageWhiteList = [
 //        "ic_height_white.png"
