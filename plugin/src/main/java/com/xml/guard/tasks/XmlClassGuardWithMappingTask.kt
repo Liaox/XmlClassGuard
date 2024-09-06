@@ -51,7 +51,8 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
         val classMapping = mapping.obfuscateAllClass(project, variantName, whiteList)
         if (hasNavigationPlugin && fragmentDirectionList.isNotEmpty()) {
             fragmentDirectionList.forEach {
-                classMapping["${it}Directions"] = "${classMapping[it]}Directions"
+                if(classMapping[it] != null)
+                    classMapping["${it}Directions"] = "${classMapping[it]}Directions"
             }
         }
         //3、替换Java/kotlin文件里引用到的类
@@ -134,6 +135,7 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
         project.files(javaDirs).asFileTree.forEach { javaFile ->
             var replaceText = javaFile.readText()
             mapping.forEach {
+                println("replaceJavaText key:"+it.key+" , value:"+it.value)
                 replaceText = replaceText(javaFile, replaceText, it.key, it.value)
             }
             javaFile.writeText(replaceText)
@@ -151,9 +153,12 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
         val rawName = rawPath.substring(rawIndex + 1)
 
         val obfuscateIndex = obfuscatePath.lastIndexOf(".")
+
         val obfuscatePackage = obfuscatePath.substring(0, obfuscateIndex)
         val obfuscateName = obfuscatePath.substring(obfuscateIndex + 1)
-
+        println("replaceJavaText package:$rawPackage , $obfuscatePackage")
+        println("replaceJavaText rawPath:$rawPath , $obfuscatePath")
+        println("replaceJavaText rawName:$rawName , $obfuscateName")
         var replaceText = rawText
         when {
             rawFile.absolutePath.removeSuffix()

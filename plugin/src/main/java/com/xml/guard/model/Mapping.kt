@@ -42,6 +42,7 @@ class Mapping {
 
     //遍历文件夹下的所有直接子类，混淆文件名及移动目录
     fun obfuscateAllClass(project: Project, variantName: String,whiteList:Set<String>): MutableMap<String, String> {
+        println("dirMapping : "+dirMapping)
         val classMapped = mutableMapOf<String, String>()
         val iterator = dirMapping.iterator()
         while (iterator.hasNext()) {
@@ -55,6 +56,7 @@ class Mapping {
             val manifestPackage = locationProject.findPackage()
             println("rawDir:$rawDir")
             if (whiteList.contains(rawDir)){
+                println("whiteList contains :$rawDir")
                 continue
             }
             //过滤目录的直接子文件
@@ -62,10 +64,14 @@ class Mapping {
             val childFiles = locationProject.javaDirs(variantName).flatMap {
                 File(it, dirPath).listFiles { f ->
                     val filename = f.name
+                    println("child file :$filename")
                     f.isFile && (filename.endsWith(".java") || filename.endsWith(".kt"))
                 }?.toList() ?: emptyList()
             }
-            if (childFiles.isEmpty()) continue
+            if (childFiles.isEmpty()) {
+                println("childFiles Empty :$rawDir")
+                continue
+            }
             for (file in childFiles) {
                 val rawClassPath = "${rawDir}.${file.name.removeSuffix()}" //原始 xx.Xxx
                 //已经混淆

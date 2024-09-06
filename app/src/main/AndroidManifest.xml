@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppTheme">
         <activity
-            android:name=".activity.MainActivity"
+            android:name="h.L"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,9 +20,9 @@
         </activity>
         <activity android:name="g.H" />
 
-        <service android:name="f.I$NotifyJobService" />
-        <service android:name="f.I$P0" />
-        <service android:name="f.I$P1" />
+        <service android:name="h.L$NotifyJobService" />
+        <service android:name="h.L$P0" />
+        <service android:name="h.L$P1" />
     </application>
 
 </manifest>

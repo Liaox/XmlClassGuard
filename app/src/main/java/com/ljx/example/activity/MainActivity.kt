@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.ljx.example.IMyAidlInterface
 import f.KtTopTest1
 import com.ljx.example.R
+import com.ljx.example.entity.A
 import f.K
 import f.i
 import f.j
@@ -33,6 +34,10 @@ class MainActivity : AppCompatActivity() {
         m.toB
         KtTopTest1()
         test(this)
+        val a = A()
+        a.b
+        val b = com.ljx.base.bean.B()
+        b.isD
     }
 
     fun test(main: com.ljx.example.activity.MainActivity) {

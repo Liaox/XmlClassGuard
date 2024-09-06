@@ -1,5 +1,6 @@
 dir mapping:
 	com.ljx.base -> a
+	com.ljx.base.bean -> h
 	com.ljx.example.entity -> b
 	com.ljx.example.view -> c
 	com.ljx.example.fragment -> d
@@ -19,3 +20,7 @@ class mapping:
 	com.ljx.example.TestInnerClass -> f.I
 	com.ljx.example.KtTopTest -> f.J
 	com.ljx.example.Test -> f.K
+	com.ljx.example.entity.ABean -> b.L
+	com.ljx.base.bean.ABean -> h.M
+	com.ljx.base.bean.testBean -> h.N
+	com.ljx.example.entity.testBean -> b.O

@@ -49,9 +49,11 @@ open class XmlClassGuardTask @Inject constructor(
         androidProjects.forEach { handleResDir(it) }
         //2、仅修改文件名及文件路径，返回本次修改的文件
         val classMapping = mapping.obfuscateAllClass(project, variantName,whiteList)
+//        println("map1 :$classMapping, $fragmentDirectionList")
         if (hasNavigationPlugin && fragmentDirectionList.isNotEmpty()) {
             fragmentDirectionList.forEach {
-                classMapping["${it}Directions"] = "${classMapping[it]}Directions"
+                if (classMapping[it]!=null)
+                    classMapping["${it}Directions"] = "${classMapping[it]}Directions"
             }
         }
         //3、替换Java/kotlin文件里引用到的类
@@ -134,6 +136,7 @@ open class XmlClassGuardTask @Inject constructor(
 
     private fun replaceJavaText(project: Project, mapping: Map<String, String>) {
         val javaDirs = project.javaDirs(variantName)
+        println("replaceJavaText javaDirs: $javaDirs")
         //遍历所有Java\Kt文件，替换混淆后的类的引用，import及new对象的地方
         project.files(javaDirs).asFileTree.forEach { javaFile ->
             var replaceText = javaFile.readText()
