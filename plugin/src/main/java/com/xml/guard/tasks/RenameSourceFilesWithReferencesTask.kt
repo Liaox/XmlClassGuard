@@ -17,6 +17,8 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
 
     @Input
     var whitelist: Set<String> = emptySet()
+    @Input
+    var offsetNameIdx:Long = 0
 
     @OutputFile
     val mappingFile: File = File("${project.projectDir}/rename_mapping.txt")
@@ -25,6 +27,7 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
 
     @TaskAction
     fun renameSourceFilesAndUpdateReferences() {
+        classIdx += offsetNameIdx
         val mappingHandler = MappingHandler(mappingFile)
         println("new rename class whiteList:$whitelist")
         val androidProjects = allDependencyAndroidProjects()
@@ -51,7 +54,7 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
     }
 
     private fun processSourceDirectory(path:String,dir: File, mappingHandler: MappingHandler) {
-        classIdx = mappingHandler.getMapping().size.toLong()
+        classIdx = mappingHandler.getMapping().size.toLong()+offsetNameIdx
         dir.walkTopDown().forEach { file ->
             if (file.name.endsWith(".java") || file.name.endsWith(".kt")) {
                 handleSourceFile(path,file, mappingHandler)
@@ -151,18 +154,27 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
         mappingHandler.getMapping().forEach { (originalClass, renamedClass) ->
             val oldClassName = originalClass.substringAfterLast('.')
             val newClassName = renamedClass.substringAfterLast('.')
-
-            // 只替换外部类名，不替换内嵌类引用（A.B）
+            // 只替换外部类名，不替换内部类引用（A.B）
             val classUsagePattern = Pattern.compile("""(?<!\.)\b$oldClassName\b(?:\s*\.\.\.)?(?!\.)""")
-            val updatedContent = classUsagePattern.matcher(content).replaceAll { matchResult ->
-                // 检查当前引用是否位于外部类或嵌套类的上下文中
-                if (isInsideInnerClassContext(matchResult.start(), content, oldClassName)) {
-                    oldClassName // 保留内部类
+            val matcher = classUsagePattern.matcher(content)
+            val sb = StringBuffer()
+            while (matcher.find()) {
+                if (isInsideInnerClassContext(matcher.start(), content, oldClassName)) {
+                    matcher.appendReplacement(sb, oldClassName) // 保留内部类
                 } else {
-                    newClassName // 替换外部类
+                    matcher.appendReplacement(sb, newClassName) // 替换外部类
                 }
             }
-
+            matcher.appendTail(sb)
+            val updatedContent = sb.toString()
+//            val updatedContent = classUsagePattern.matcher(content).replaceAll { matchResult ->
+//                // 检查当前引用是否位于外部类或嵌套类的上下文中
+//                if (isInsideInnerClassContext(matchResult.start(), content, oldClassName)) {
+//                    oldClassName // 保留内部类
+//                } else {
+//                    newClassName // 替换外部类
+//                }
+//            }
             if (content != updatedContent) {
                 content = updatedContent
                 updated = true
@@ -190,13 +202,45 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
             file.writeText(content)
         }
     }
-
+    //去除注释内容
+    private fun removeComments(content: String): String {
+        // 去除多行注释，使用非贪婪模式
+        val noMultilineComments = content.replace(Regex("""/\*[\s\S]*?\*/"""), "")
+        // 去除单行注释，避免误删包含 `http://` 的文本
+        // 仅匹配以 `//` 开头的内容，确保 `http://` 这样的文本不会被误删
+        val noSingleLineComments = noMultilineComments.replace(Regex("""(?<![\w\.])//[^\r\n]*"""), "")
+        return noSingleLineComments
+    }
     // 用于检查是否处于嵌套类上下文中
     private fun isInsideInnerClassContext(position: Int, content: String, oldClassName: String): Boolean {
-        // 检查是否在类的嵌套范围内，例如 A.B 中的 B 不应该被替换
-        val innerClassPattern = Pattern.compile("""\b(\w+)\.$oldClassName\b""") // 找到 class 声明
-        val matcher = innerClassPattern.matcher(content.substring(0, position))
-        return matcher.find()
+//        // 检查是否在类的嵌套范围内，例如 A.B 中的 B 不应该被替换
+//        val innerClassPattern = Pattern.compile("""\b(?:public\s+|private\s+|protected\s+|internal\s+)?(?:static\s+)?(?:class|data\s+class|object|enum\s+class|sealed\s+class)\s+\w+(?:\s*:\s*\w+)?(?:\s*,\s*\w+)*\s*\{\s*[^}]*\b$oldClassName\b""")
+//        val matcher = innerClassPattern.matcher(content.substring(0, position))
+//        return matcher.find()
+//        val innerClassPattern = Pattern.compile("""\b(?:public\s+|protected\s+|private\s+)?(?:static\s+)?(?:data\s+|sealed\s+|inner\s+|object\s+)?class\s+$oldClassName\b""")
+//        // 在完整的文件内容中匹配，但只考虑到当前位置之前的部分
+//        val matcher = innerClassPattern.matcher(content)
+//        while (matcher.find()) {
+////            println("inner content:${matcher.start()} , $position , ${matcher.start() < position}")
+//            // 仅检查匹配的类声明是否出现在当前引用之前
+//            if (matcher.start() <= position) {
+//                return true  // 在 oldClassName 类的定义之前找到匹配，说明是内部类
+//            }
+//        }
+//        return false  // 如果没有匹配到，说明不在内部类的上下文中
+        val classPattern = Pattern.compile("""\b(?:public\s+|protected\s+|private\s+)?(?:static\s+)?(?:data\s+|sealed\s+|inner\s+|object\s+)?class\s+(\w+)""")
+        val matcher = classPattern.matcher(content)
+
+        // Check all class declarations in the content
+        while (matcher.find()) {
+            val className = matcher.group(1)
+            if (className == oldClassName) {
+                // 如果匹配到的类名是内部类，返回 true
+                return true
+            }
+        }
+
+        return false
     }
 
     // 判断是否在匿名类上下文中（这个逻辑可以忽略，具体实现可能不适合你的场景）
