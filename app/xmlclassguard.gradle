@@ -38,4 +38,6 @@ xmlClassGuard {
     imageWhiteList = [
 //        "ic_height_white.png"
     ]
+    renameNameOffsetIdx = 11
+    renameModelPackages = [""]
 }

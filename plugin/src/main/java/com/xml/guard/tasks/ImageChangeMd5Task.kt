@@ -129,6 +129,7 @@ open class ImageChangeMd5Task @Inject constructor(
     private fun isImageFile(file: File):Boolean{
         val b = !file.name.isNullOrEmpty() && (file.name.lowercase().endsWith(".png")
                 || file.name.lowercase().endsWith(".jpg")
+                || file.name.lowercase().endsWith(".webp")
                 || file.name.lowercase().endsWith(".jpeg"))
         return b
     }

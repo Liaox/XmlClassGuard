@@ -53,4 +53,18 @@ open class GuardExtension {
      * 修改图片md5的白名单。图片名称。
      */
     var imageWhiteList:Set<String> = HashSet()
+
+    /**
+     * 重命名实体的包名集合。
+     */
+    var renameModelPackages :Set<String> = HashSet()
+    /**
+     * 重命名实体类包名白名单，暂无逻辑。
+     */
+    var renameModelWhiteList:Set<String> = HashSet()
+
+    /**
+     * 重命名实体类的名称偏移值，影响起始字母选择。各包应不同。
+     */
+    var renameNameOffsetIdx :Long = 0L
 }

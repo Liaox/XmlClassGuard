@@ -1,43 +1,46 @@
+package com.xml.guard.tasks
+
+import com.xml.guard.entensions.GuardExtension
 import com.xml.guard.utils.MappingHandler
 import com.xml.guard.utils.allDependencyAndroidProjects
 import com.xml.guard.utils.inClassNameBlackList
 import com.xml.guard.utils.javaDirs
 import com.xml.guard.utils.toUpperLetterStr
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.util.regex.Pattern
+import javax.inject.Inject
 
-open class RenameSourceFilesWithReferencesTask : DefaultTask() {
+open class RenameSourceFilesWithReferencesTask @Inject constructor(
+    guardExtension: GuardExtension,
+    private val variantName: String,
+)  : DefaultTask() {
+    init {
+        group = "guard"
+    }
 
-    @Input
-    var targetPackages: Array<String> = arrayOf("com/example/myapp")
-
-    @Input
-    var whitelist: Set<String> = emptySet()
-    @Input
-    var offsetNameIdx:Long = 0
-
-    @OutputFile
-    val mappingFile: File = File("${project.projectDir}/rename_mapping.txt")
+    private var whitelist = guardExtension.renameModelWhiteList
+    private var targetPackages = guardExtension.renameModelPackages
+    private var offsetNameIdx = guardExtension.renameNameOffsetIdx
     //类名索引
     private var classIdx = -1L
 
     @TaskAction
-    fun renameSourceFilesAndUpdateReferences() {
-        classIdx += offsetNameIdx
-        val mappingHandler = MappingHandler(mappingFile)
+    fun execute() {
         println("new rename class whiteList:$whitelist")
+        classIdx += offsetNameIdx
+        val mappingFile: File = File("${project.projectDir}/rename_mapping.txt")
+        val mappingHandler = MappingHandler(mappingFile)
         val androidProjects = allDependencyAndroidProjects()
         androidProjects.forEach {
-            val dirs = it.javaDirs("")
+            val dirs = it.javaDirs(variantName)
             dirs.forEach { dir->
                 targetPackages.forEach { targetPackage->
                     val sourceDir = File("${dir.path}/${targetPackage.replace(".", "/")}")
+                    println(sourceDir)
                     if (sourceDir.isDirectory){
-                        println(sourceDir)
                         processSourceDirectory(dir.path,sourceDir, mappingHandler)
                     }
                 }
@@ -57,6 +60,7 @@ open class RenameSourceFilesWithReferencesTask : DefaultTask() {
         classIdx = mappingHandler.getMapping().size.toLong()+offsetNameIdx
         dir.walkTopDown().forEach { file ->
             if (file.name.endsWith(".java") || file.name.endsWith(".kt")) {
+                println(file.name)
                 handleSourceFile(path,file, mappingHandler)
             }
         }

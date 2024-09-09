@@ -1,8 +1,6 @@
 package com.xml.guard
 
-import com.android.build.api.instrumentation.FramesComputationMode
-import com.android.build.api.instrumentation.InstrumentationScope
-import com.android.build.api.variant.AndroidComponentsExtension
+import com.xml.guard.tasks.RenameSourceFilesWithReferencesTask
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.api.ApplicationVariant
 import com.xml.guard.entensions.GuardExtension
@@ -15,7 +13,6 @@ import com.xml.guard.tasks.MoveDirTask
 import com.xml.guard.tasks.PackageChangeTask
 import com.xml.guard.tasks.XmlClassGuardTask
 import com.xml.guard.tasks.XmlClassGuardWithMappingTask
-import com.xml.guard.transform.StringFogTransform
 import com.xml.guard.utils.AgpVersion
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -59,6 +56,7 @@ class XmlClassGuardPlugin : Plugin<Project> {
         createTask("xmlClassWithMapping$variantName", XmlClassGuardWithMappingTask::class, guardExt, variantName)
         createTask("packageChange$variantName", PackageChangeTask::class, guardExt, variantName)
         createTask("moveDir$variantName", MoveDirTask::class, guardExt, variantName)
+        createTask("renameModels$variantName", RenameSourceFilesWithReferencesTask::class, guardExt, variantName)
         if (guardExt.findAndConstraintReferencedIds) {
             createAndFindConstraintReferencedIdsTask(variantName)
         }

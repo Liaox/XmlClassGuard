@@ -66,8 +66,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
-tasks.register("renameSourceFilesWithReferences", RenameSourceFilesWithReferencesTask) {
-    // 配置参数
-    targetPackages = ["com.ljx.example.entity","com.ljx.base.bean"]  // 你要处理的目标包名
-    whitelist = ["SomeClass.java", "AnotherClass.kt"] as Set // 配置白名单
-}
+//tasks.register("renameSourceFilesWithReferences", RenameSourceFilesWithReferencesTask) {
+//    // 配置参数
+//    targetPackages = ["com.ljx.example.entity","com.ljx.base.bean"]  // 你要处理的目标包名
+//    whitelist = ["SomeClass.java", "AnotherClass.kt"] as Set // 配置白名单
+//}
