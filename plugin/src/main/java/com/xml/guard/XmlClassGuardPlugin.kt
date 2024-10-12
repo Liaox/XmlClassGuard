@@ -54,8 +54,8 @@ class XmlClassGuardPlugin : Plugin<Project> {
         val variantName = variant.name.capitalize()
         createTask("xmlClassGuard$variantName", XmlClassGuardTask::class, guardExt, variantName)
         createTask("xmlClassWithMapping$variantName", XmlClassGuardWithMappingTask::class, guardExt, variantName)
-        createTask("packageChange$variantName", PackageChangeTask::class, guardExt, variantName)
-        createTask("moveDir$variantName", MoveDirTask::class, guardExt, variantName)
+//        createTask("packageChange$variantName", PackageChangeTask::class, guardExt, variantName)
+//        createTask("moveDir$variantName", MoveDirTask::class, guardExt, variantName)
         createTask("renameModels$variantName", RenameSourceFilesWithReferencesTask::class, guardExt, variantName)
         if (guardExt.findAndConstraintReferencedIds) {
             createAndFindConstraintReferencedIdsTask(variantName)
