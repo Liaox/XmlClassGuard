@@ -5,15 +5,16 @@ import java.util.regex.Pattern
 object TestUtil {
     fun match(content: String, oldClassName: String,newClassName:String){
         // 只替换外部类名，不替换内部类引用（A.B）
-        val classUsagePattern = Pattern.compile("""(?<!\.)\b$oldClassName\b(?:\s*\.\.\.)?(?!\.)""")
+        val classUsagePattern = Pattern.compile("""(?<!\.)\b($oldClassName)\b(?:\s*\.\.\.)?(?!\.\w)""")
         val matcher = classUsagePattern.matcher(content)
         val sb = StringBuffer()
         while (matcher.find()) {
             println(matcher.group() + " ---------")
+            val end = if(matcher.group(0).endsWith("...")) "..." else ""
             if (isInsideInnerClassContext(matcher.start(), content, oldClassName)) {
-                matcher.appendReplacement(sb, oldClassName) // 保留内部类
+                matcher.appendReplacement(sb, oldClassName+end) // 保留内部类
             } else {
-                matcher.appendReplacement(sb, newClassName) // 替换外部类
+                matcher.appendReplacement(sb, newClassName+end) // 替换外部类
             }
         }
         matcher.appendTail(sb)

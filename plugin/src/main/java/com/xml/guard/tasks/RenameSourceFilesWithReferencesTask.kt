@@ -120,8 +120,8 @@ open class RenameSourceFilesWithReferencesTask @Inject constructor(
 //        println("srcDir:$srcDir")
         processDirectory(srcDir, mappingHandler, extensions)
 
-        val resDir = File("${dir}/res")
-        processDirectory(resDir, mappingHandler, extensions)
+//        val resDir = File("${dir}/res")
+//        processDirectory(resDir, mappingHandler, extensions)
     }
 
     private fun processDirectory(dir: File, mappingHandler: MappingHandler, extensions: List<String>) {
@@ -133,6 +133,7 @@ open class RenameSourceFilesWithReferencesTask @Inject constructor(
     }
 
     private fun updateReferencesInFile(file: File, mappingHandler: MappingHandler) {
+//        println("file:$file")
         var content = file.readText()
         var updated = false
 
@@ -143,9 +144,13 @@ open class RenameSourceFilesWithReferencesTask @Inject constructor(
             val newClassName = renamedClass.substringAfterLast('.')
 
             // 匹配 import 语句并替换
-            val importPattern = Pattern.compile("""import\s+($packagePrefix\.)?\b$oldClassName\b""")
+            val importPattern = Pattern.compile("""(?:\bimport\s+)?\b$packagePrefix\.$oldClassName\b""")
             val updatedContent = importPattern.matcher(content).replaceAll { result ->
-                "import ${packagePrefix}.$newClassName"
+                if (result.group().indexOf("import")>-1){
+                    "import ${packagePrefix}.$newClassName"
+                }else{
+                    "${packagePrefix}.$newClassName"
+                }
             }
 
             if (content != updatedContent) {
@@ -163,10 +168,11 @@ open class RenameSourceFilesWithReferencesTask @Inject constructor(
             val matcher = classUsagePattern.matcher(content)
             val sb = StringBuffer()
             while (matcher.find()) {
+                val end = if(matcher.group().endsWith("...")) "..." else ""
                 if (isInsideInnerClassContext(matcher.start(), content, oldClassName)) {
-                    matcher.appendReplacement(sb, oldClassName) // 保留内部类
+                    matcher.appendReplacement(sb, oldClassName+end) // 保留内部类
                 } else {
-                    matcher.appendReplacement(sb, newClassName) // 替换外部类
+                    matcher.appendReplacement(sb, newClassName+end) // 替换外部类
                 }
             }
             matcher.appendTail(sb)
