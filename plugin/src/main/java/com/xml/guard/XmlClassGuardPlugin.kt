@@ -52,11 +52,11 @@ class XmlClassGuardPlugin : Plugin<Project> {
 
     private fun Project.createTasks(guardExt: GuardExtension, variant: ApplicationVariant) {
         val variantName = variant.name.capitalize()
-        createTask("xmlClassGuard$variantName", XmlClassGuardTask::class, guardExt, variantName)
-        createTask("xmlClassWithMapping$variantName", XmlClassGuardWithMappingTask::class, guardExt, variantName)
+        val xmlClassTask = createTask("xmlClassGuard$variantName", XmlClassGuardTask::class, guardExt, variantName)
+        val xmlMappingTask = createTask("xmlClassWithMapping$variantName", XmlClassGuardWithMappingTask::class, guardExt, variantName)
 //        createTask("packageChange$variantName", PackageChangeTask::class, guardExt, variantName)
 //        createTask("moveDir$variantName", MoveDirTask::class, guardExt, variantName)
-        createTask("renameModels$variantName", RenameSourceFilesWithReferencesTask::class, guardExt, variantName)
+        val renameTask = createTask("renameModels$variantName", RenameSourceFilesWithReferencesTask::class, guardExt, variantName)
         if (guardExt.findAndConstraintReferencedIds) {
             createAndFindConstraintReferencedIdsTask(variantName)
         }
@@ -66,10 +66,15 @@ class XmlClassGuardPlugin : Plugin<Project> {
 //        if (guardExt.findResChiperConstraintReferencedIds) {
 //            createResChiperFindConstraintReferencedIdsTask(variantName)
 //        }
+        var changeImageTask:Task? = null
         //需要修改图片文件md5.目前仅支持修改jpg或png。
         if (guardExt.changeImageMD5Count>0){
             val taskName = "imageChangeMD5$variantName"
-            createTask(taskName, ImageChangeMd5Task::class, guardExt, variantName)
+            changeImageTask = createTask(taskName, ImageChangeMd5Task::class, guardExt, variantName)
+        }
+        if (changeImageTask!=null){
+            xmlClassTask.dependsOn(changeImageTask,renameTask)
+            xmlMappingTask.dependsOn(changeImageTask,renameTask)
         }
     }
 
