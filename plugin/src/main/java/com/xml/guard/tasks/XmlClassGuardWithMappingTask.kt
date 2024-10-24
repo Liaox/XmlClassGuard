@@ -100,6 +100,11 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
         for (classInfo in classInfoList) {
             val classPath = classInfo.classPath
             val dirPath = classPath.getDirPath()
+            //白名单包含此路径
+            if (whiteList.contains(dirPath)){
+                println("[whiteList] dirPath: $dirPath")
+                continue
+            }
             //本地不存在这个文件
             if (project.findLocationProject(dirPath, variantName) == null) continue
             //已经混淆了这个类
@@ -108,6 +113,10 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
 //            println("没有被混淆的类：$classPath")
             if (!mapping.isInMapping(classPath))continue//todo 作用：混淆指定的包路径下的类
             println("classPath : $classPath")
+            if (whiteList.contains(classPath)){
+                println("[whiteList] path: $classPath")
+                continue
+            }
             //如果在mapping配置的包内就可以进行混淆
             val obfuscatePath = mapping.obfuscatePath(classPath)
             xmlText = xmlText.replaceWords(classPath, obfuscatePath)

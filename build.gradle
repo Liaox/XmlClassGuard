@@ -5,6 +5,7 @@ buildscript {
         classpath "com.github.liujingxing:XmlClassGuard:$plugin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3"
         classpath "com.overseas.reschiper:plugin:0.1.0-rc4"
+        classpath "com.hz.model.annotation:plugin:1.0.0"
 //        classpath 'com.pf.fakedex:fakedex-plugin:1.0.1'
     }
 }
