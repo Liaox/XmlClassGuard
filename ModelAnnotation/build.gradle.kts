@@ -23,15 +23,18 @@ val javadocJar by tasks.registering(Jar::class) {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
+    implementation("com.android.tools.build:gradle:8.0.2")
     implementation("org.ow2.asm:asm:9.5")
     implementation("org.ow2.asm:asm-util:9.5")
     implementation("org.ow2.asm:asm-commons:9.5")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation(gradleApi())
     implementation(localGroovy())
+
 }
 
 publishing {

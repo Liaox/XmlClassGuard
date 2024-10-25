@@ -1,36 +1,60 @@
 package com.hz.model.annotation;
 
+import com.android.build.gradle.AppExtension;
+import com.android.build.gradle.api.ApplicationVariant;
+
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.util.internal.TextUtil;
 
 public class ModelAnnotationPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        AppExtension android = (AppExtension) project.getExtensions().getByName("android");
         // 注册扩展，允许用户配置多个包名
         AnnotationConfig extension = project.getExtensions().create("annotationConfig", AnnotationConfig.class, project);
-
-        // 注册 AddAnnotationTask
-        AddAnnotationTask addAnnotationTask = project.getTasks().create("addAnnotationTask", AddAnnotationTask.class);
-        // 监听编译任务
-        project.getTasks().whenTaskAdded(task -> {
-            if (task.getName().startsWith("compile") && task.getName().endsWith("JavaWithJavac")) {
-                task.doFirst(t -> {
-                    addAnnotationTask.setSubPackagePaths(extension.getSubPackagePaths());
-                    addAnnotationTask.setChannel(extension.getChannel());
-                    // 从任务名称中获取 buildType 和 flavor
-                    String buildType = getBuildTypeFromTaskName(task.getName());
-                    String flavor = getFlavorFromTaskName(task.getName());
-                    // 将编译变体信息传递给 AddAnnotationTask
-                    addAnnotationTask.setBuildType(buildType);
-                    addAnnotationTask.setFlavor(flavor);
-                });
-
-                task.finalizedBy(addAnnotationTask); // 编译任务完成后执行 addAnnotationTask
-            }
+        project.afterEvaluate(project1 -> {
+            android.getApplicationVariants().all(variant -> {
+                createAnnotationTasks(project1, variant,extension);
+            });
         });
-    }
 
+
+//        // 注册 AddAnnotationTask
+//        AddAnnotationTask addAnnotationTask = project.getTasks().create("addAnnotationTask", AddAnnotationTask.class);
+//        // 监听编译任务
+//        project.getTasks().whenTaskAdded(task -> {
+//            if (task.getName().equals("compileDebugJavaWithJavac") || task.getName().equals("compileReleaseJavaWithJavac")) {
+//                task.doFirst(t -> {
+//                    addAnnotationTask.setSubPackagePaths(extension.getSubPackagePaths());
+//                    addAnnotationTask.setChannel(extension.getChannel());
+//                    // 从任务名称中获取 buildType 和 flavor
+//                    String buildType = getBuildTypeFromTaskName(task.getName());
+//                    String flavor = getFlavorFromTaskName(task.getName());
+//                    // 将编译变体信息传递给 AddAnnotationTask
+//                    addAnnotationTask.setBuildType(buildType);
+//                    addAnnotationTask.setFlavor(flavor);
+//                });
+//
+//                task.finalizedBy(addAnnotationTask); // 编译任务完成后执行 addAnnotationTask
+//            }
+//        });
+    }
+    private void createAnnotationTasks(Project project, ApplicationVariant variant,AnnotationConfig extension){
+        String variantName = TextUtil.capitalize(variant.getName());
+        String taskName = "addAnnotationTask"+variantName;
+        Task task =  project.getTasks().findByName(taskName);
+        if (task==null){
+            task = project.getTasks().create(taskName,AddAnnotationTask.class,variantName,extension);
+        }
+        String compileJavacTask = "compile"+variantName+"JavaWithJavac";
+        Task comileTask = project.getTasks().findByName(compileJavacTask);
+        if (comileTask!=null){
+            comileTask.finalizedBy(task);
+        }
+    }
     private String getBuildTypeFromTaskName(String taskName) {
         if (taskName.contains("Debug")) {
             return "debug";

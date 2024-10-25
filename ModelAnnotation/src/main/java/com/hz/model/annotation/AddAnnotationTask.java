@@ -1,4 +1,6 @@
 package com.hz.model.annotation;
+import com.android.build.gradle.AppExtension;
+
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
@@ -11,44 +13,54 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import javax.inject.Inject;
+
 public abstract class AddAnnotationTask extends DefaultTask {
     private String buildType;
     private String flavor;
     private List<String> subPackagePaths;
     private String channel;
-    @Input
-    public String getChannel() {
-        return channel;
+    @Inject
+    public AddAnnotationTask(String variantName, AnnotationConfig extension){
+        this.buildType = variantName.toLowerCase();
+        this.subPackagePaths = extension.getSubPackagePaths();
+        this.channel = extension.getChannel();
+        //暂不支持flavor配置。
+        this.flavor = "";
     }
-
-    public void setChannel(String channel) {
-        this.channel = channel;
-    }
-    @Input
-    public String getBuildType() {
-        return buildType;
-    }
-
-    public void setBuildType(String buildType) {
-        this.buildType = buildType;
-    }
-
-    @Input
-    public String getFlavor() {
-        return flavor;
-    }
-
-    public void setFlavor(String flavor) {
-        this.flavor = flavor;
-    }
-    @Input
-    public List<String> getSubPackagePaths() {
-        return subPackagePaths;
-    }
-
-    public void setSubPackagePaths(List<String> subPackagePaths) {
-        this.subPackagePaths = subPackagePaths;
-    }
+//    @Input
+//    public String getChannel() {
+//        return channel;
+//    }
+//
+//    public void setChannel(String channel) {
+//        this.channel = channel;
+//    }
+//    @Input
+//    public String getBuildType() {
+//        return buildType;
+//    }
+//
+//    public void setBuildType(String buildType) {
+//        this.buildType = buildType;
+//    }
+//
+//    @Input
+//    public String getFlavor() {
+//        return flavor;
+//    }
+//
+//    public void setFlavor(String flavor) {
+//        this.flavor = flavor;
+//    }
+//    @Input
+//    public List<String> getSubPackagePaths() {
+//        return subPackagePaths;
+//    }
+//
+//    public void setSubPackagePaths(List<String> subPackagePaths) {
+//        this.subPackagePaths = subPackagePaths;
+//    }
     @TaskAction
     public void addAnnotations() {
         // 构建 classes 根目录
@@ -74,6 +86,27 @@ public abstract class AddAnnotationTask extends DefaultTask {
         } else {
             getLogger().warn("Class root directory does not exist: " + classRootDir.getAbsolutePath());
         }
+
+        File kotlinClassDir = new File(getProject().getBuildDir().getAbsolutePath() +
+                "/tmp/kotlin-classes/" + buildType);
+        if (kotlinClassDir.exists()) {
+            for (String subPackage : subPackagePaths) {
+                System.out.println("processing package models:"+subPackage);
+                File subPackageDir = new File(kotlinClassDir, subPackage.replace('.', '/'));
+                if (subPackageDir.exists()) {
+                    try {
+                        processClassesInDirectory(subPackageDir, annotationDesc);
+                        getLogger().lifecycle("Annotation injection completed for package: " + subPackage);
+                    } catch (IOException e) {
+                        getLogger().error("Failed to process classes in package: " + subPackage, e);
+                    }
+                } else {
+                    getLogger().warn("Package directory does not exist: " + subPackageDir.getAbsolutePath());
+                }
+            }
+        } else {
+            getLogger().warn("Class root directory does not exist: " + kotlinClassDir.getAbsolutePath());
+        }
     }
 
     private void processClassesInDirectory(File dir, String annotationDesc) throws IOException {
@@ -98,5 +131,6 @@ public abstract class AddAnnotationTask extends DefaultTask {
         fos.write(modifiedClassBytes);
         fos.close();
         fis.close();
+        getLogger().lifecycle("Modified class file: " + classFile.getAbsolutePath());
     }
 }

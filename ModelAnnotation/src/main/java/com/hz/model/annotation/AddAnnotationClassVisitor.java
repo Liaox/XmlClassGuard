@@ -43,6 +43,7 @@ public class AddAnnotationClassVisitor extends ClassVisitor {
             private boolean hasSerializedName = false; // 标记是否已存在 SerializedName 注解
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+//                System.out.println("visitAnnotation: "+desc);
                 if (desc.equals(annotationDesc)) {
                     hasSerializedName = true; // 已存在 SerializedName 注解
                 }
@@ -51,7 +52,7 @@ public class AddAnnotationClassVisitor extends ClassVisitor {
 
             @Override
             public void visitEnd() {
-                System.out.println("visitEnd: ");
+//                System.out.println("visitEnd: "+!hasSerializedName);
                 // 检查当前字段是否已经有该注解
                 if (!hasSerializedName) {
                     // 为 @SerializedName 添加名称，可以使用字段名或自定义名称
@@ -59,6 +60,7 @@ public class AddAnnotationClassVisitor extends ClassVisitor {
                     int num = sha256ToNonNegativeInt(name+"*"+channel);
                     int idx = words.isEmpty()?0:num%words.size();
                     String newName = words.isEmpty()? name : words.get(idx);
+                    System.out.println("visitEnd name: "+name+", new :"+newName);
                     av.visit("value", newName); // 这里将字段名作为 SerializedName 的值
                     av.visitEnd(); // 结束注解访问
                 }
