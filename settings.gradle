@@ -9,6 +9,10 @@ pluginManagement {
         maven { url 'https://jitpack.io' }
         maven { url 'https://raw.githubusercontent.com/martinloren/AabResGuard/mvn-repo' }
         maven {
+            allowInsecureProtocol true
+            url 'http://3.0.199.193:7777/repository/maven-releases'
+        }
+        maven {
             //配置本地插件目录
             url=uri('./localmaven')
         }
@@ -20,6 +24,10 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url 'https://raw.githubusercontent.com/martinloren/AabResGuard/mvn-repo' }
+        maven {
+            allowInsecureProtocol true
+            url 'http://3.0.199.193:7777/repository/maven-releases'
+        }
         jcenter()   //AndResGuard在jcenter上
         maven {
             //配置本地插件目录
