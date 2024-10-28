@@ -48,13 +48,17 @@ dependencies {
 
 publishing {
     repositories {
-        maven {
-            url = uri("../localmaven")
+        repositories {
+            maven {
+                isAllowInsecureProtocol = true
+//            url = uri("../localmaven")
+                url = uri("http://3.0.199.193:7777/repository/maven-releases/")
 //            allowInsecureProtocol = true
-            if (url.toString().startsWith("http")) {
-                credentials {
-                    username = ""
-                    password = ""
+                if (url.toString().startsWith("http")) {
+                    credentials {
+                        username = "admin"
+                        password = "admin123"
+                    }
                 }
             }
         }
