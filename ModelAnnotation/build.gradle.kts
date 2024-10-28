@@ -41,8 +41,8 @@ publishing {
     repositories {
         maven {
             isAllowInsecureProtocol = true
-            url = uri("../localmaven")
-//            url = uri("http://3.0.199.193:7777/repository/maven-releases/")
+//            url = uri("../localmaven")
+            url = uri("http://3.0.199.193:7777/repository/maven-releases/")
 //            allowInsecureProtocol = true
             if (url.toString().startsWith("http")) {
                 credentials {
