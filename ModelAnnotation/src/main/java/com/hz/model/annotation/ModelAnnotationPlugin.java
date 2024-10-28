@@ -1,7 +1,11 @@
 package com.hz.model.annotation;
 
 import com.android.build.gradle.AppExtension;
+import com.android.build.gradle.AppPlugin;
+import com.android.build.gradle.LibraryExtension;
+import com.android.build.gradle.LibraryPlugin;
 import com.android.build.gradle.api.ApplicationVariant;
+import com.android.build.gradle.api.LibraryVariant;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -12,14 +16,26 @@ public class ModelAnnotationPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        AppExtension android = (AppExtension) project.getExtensions().getByName("android");
         // 注册扩展，允许用户配置多个包名
         AnnotationConfig extension = project.getExtensions().create("annotationConfig", AnnotationConfig.class, project);
-        project.afterEvaluate(project1 -> {
-            android.getApplicationVariants().all(variant -> {
-                createAnnotationTasks(project1, variant,extension);
+        if (project.getPlugins().hasPlugin(AppPlugin.class)){
+            AppExtension android = (AppExtension) project.getExtensions().getByName("android");
+            project.afterEvaluate(project1 -> {
+                android.getApplicationVariants().all(variant -> {
+                    createAnnotationTasks(project1, variant,extension);
+                });
             });
-        });
+        }else if (project.getPlugins().hasPlugin(LibraryPlugin.class)){
+            LibraryExtension lib = project.getExtensions().getByType(LibraryExtension.class);
+            project.afterEvaluate(project1 -> {
+                lib.getLibraryVariants().all(variant -> {
+                    createAnnotationTasks(project1, variant,extension);
+                });
+            });
+        }
+
+
+
 
 
 //        // 注册 AddAnnotationTask
@@ -43,6 +59,20 @@ public class ModelAnnotationPlugin implements Plugin<Project> {
 //        });
     }
     private void createAnnotationTasks(Project project, ApplicationVariant variant,AnnotationConfig extension){
+        String variantName = TextUtil.capitalize(variant.getName());
+        String taskName = "addAnnotationTask"+variantName;
+        Task task =  project.getTasks().findByName(taskName);
+        if (task==null){
+            task = project.getTasks().create(taskName,AddAnnotationTask.class,variantName,extension);
+        }
+        String compileJavacTask = "compile"+variantName+"JavaWithJavac";
+        Task comileTask = project.getTasks().findByName(compileJavacTask);
+        if (comileTask!=null){
+            comileTask.finalizedBy(task);
+        }
+    }
+
+    private void createAnnotationTasks(Project project, LibraryVariant variant, AnnotationConfig extension){
         String variantName = TextUtil.capitalize(variant.getName());
         String taskName = "addAnnotationTask"+variantName;
         Task task =  project.getTasks().findByName(taskName);

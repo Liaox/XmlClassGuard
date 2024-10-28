@@ -1,7 +1,10 @@
 package com.hz.model.annotation;
 import com.android.build.gradle.AppExtension;
+import com.android.build.gradle.AppPlugin;
+import com.android.build.gradle.LibraryPlugin;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.ClassReader;
@@ -63,11 +66,27 @@ public abstract class AddAnnotationTask extends DefaultTask {
 //    }
     @TaskAction
     public void addAnnotations() {
-        // 构建 classes 根目录
-        File classRootDir = new File(getProject().getBuildDir().getAbsolutePath() +
-                "/intermediates/javac/" + (flavor.isEmpty() ? "" : (flavor + "/")) + buildType + "/classes");
-
         String annotationDesc = "Lcom/google/gson/annotations/SerializedName;"; // 更新为 Gson 的 SerializedName 描述符
+//        getProject().getRootProject().getSubprojects().forEach(p->{
+////            System.out.println("project:"+p.getName());
+//
+//        });
+        Project p = getProject();
+        if (p.getPlugins().hasPlugin(AppPlugin.class)){
+//                System.out.println("project:"+p.getName() + ", is app");
+            processJavaDir(p,annotationDesc);
+            processKotlinDir(p,annotationDesc);
+        }else if (p.getPlugins().hasPlugin(LibraryPlugin.class)){
+//                System.out.println("project:"+p.getName() + ", is lib");
+            processJavaDir(p,annotationDesc);
+            processKotlinDir(p,annotationDesc);
+        }
+
+    }
+    private void processJavaDir(Project project, String annotationDesc){
+        // 构建 classes 根目录
+        File classRootDir = new File(project.getBuildDir().getAbsolutePath() +
+                "/intermediates/javac/" + (flavor.isEmpty() ? "" : (flavor + "/")) + buildType + "/classes");
         if (classRootDir.exists()) {
             for (String subPackage : subPackagePaths) {
                 System.out.println("processing package models:"+subPackage);
@@ -86,8 +105,10 @@ public abstract class AddAnnotationTask extends DefaultTask {
         } else {
             getLogger().warn("Class root directory does not exist: " + classRootDir.getAbsolutePath());
         }
+    }
 
-        File kotlinClassDir = new File(getProject().getBuildDir().getAbsolutePath() +
+    private void processKotlinDir(Project project,String annotationDesc){
+        File kotlinClassDir = new File(project.getBuildDir().getAbsolutePath() +
                 "/tmp/kotlin-classes/" + buildType);
         if (kotlinClassDir.exists()) {
             for (String subPackage : subPackagePaths) {

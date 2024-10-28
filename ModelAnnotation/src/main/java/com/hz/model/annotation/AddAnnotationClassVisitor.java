@@ -20,7 +20,7 @@ public class AddAnnotationClassVisitor extends ClassVisitor {
     private final String annotationDesc;
     private final String channel;
     private List<String> words = new ArrayList<>();
-
+    private boolean isEnumClass = false;
     public AddAnnotationClassVisitor(ClassVisitor classVisitor, String annotationDesc,String channel) {
         super(Opcodes.ASM9, classVisitor);
         this.annotationDesc = annotationDesc;
@@ -30,8 +30,18 @@ public class AddAnnotationClassVisitor extends ClassVisitor {
     }
 
     @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        isEnumClass = (access & Opcodes.ACC_ENUM) != 0;
+        super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
     public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
         System.out.println("visitField: " + name + ","+(access & Opcodes.ACC_SYNTHETIC));
+        //如果是枚举类的字段。
+        if (isEnumClass){
+            return super.visitField(access, name, descriptor, signature, value);
+        }
 //        // 跳过 synthetic 字段
 //        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
 //            return super.visitField(access, name, descriptor, signature, value);

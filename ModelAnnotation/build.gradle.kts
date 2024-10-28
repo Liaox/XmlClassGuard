@@ -41,8 +41,8 @@ publishing {
     repositories {
         maven {
             isAllowInsecureProtocol = true
-//            url = uri("../localmaven")
-            url = uri("http://3.0.199.193:7777/repository/maven-releases/")
+            url = uri("../localmaven")
+//            url = uri("http://3.0.199.193:7777/repository/maven-releases/")
 //            allowInsecureProtocol = true
             if (url.toString().startsWith("http")) {
                 credentials {
@@ -55,7 +55,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = "com.hz.model.annotation"
-            version = "1.0.0"
+            version = "1.0.1"
             artifactId = "plugin"
             from(components["java"])
         }
