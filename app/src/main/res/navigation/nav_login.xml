@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/login_fragment"
-        android:name="d.D">
+        android:name="j.Q">
 
         <action
             android:id="@+id/to_user_fragment"
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/user_fragment"
-        android:name="d.E">
+        android:name="j.S">
 
         <action
             android:id="@+id/to_login_fragment"

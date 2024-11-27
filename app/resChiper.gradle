@@ -2,7 +2,7 @@ apply plugin : "com.overseas.reschiper"
 resChiper {
     enableObfuscation = true //by default res obfuscate is enabled
     obfuscationMode = "default" //["dir", "file", "default"]
-    obfuscatedBundleName = "reschiper-app.aab" // Obfuscated file name, must end with '.aab'
+    obfuscatedBundleName = "test-app.aab" // Obfuscated file name, must end with '.aab'
     //mappingFile = file("path/to/your/mapping.txt").toPath() // Mapping file used for incremental obfuscation
     whiteList = [
             //Whitelist rule (directory name to exclude)

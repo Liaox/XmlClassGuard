@@ -15,8 +15,15 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,6 +108,8 @@ public class ResChiperTask extends DefaultTask {
 
         Command command = builder.build(builder.build(), Command.TYPE.OBFUSCATE_BUNDLE);
         command.execute(Command.TYPE.OBFUSCATE_BUNDLE);
+
+        aabToApk(keyStore);
     }
 
     /**
@@ -161,5 +170,110 @@ public class ResChiperTask extends DefaultTask {
         if (value.length() > 2)
             return value.substring(0, value.length() / 2) + "****";
         return "****";
+    }
+
+    private void aabToApk(KeyStore keyStore){
+        try {
+            if (keyStore.storeFile!=null && keyStore.storeFile.exists()){
+                // 获取 bundletool-all-1.15.6.jar 的路径
+                File jarFile = new File(getProject().getBuildDir(), "bundletool-all-1.15.6.jar");
+                try (InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("bundletool-all-1.15.6.jar");
+                     FileOutputStream outputStream = new FileOutputStream(jarFile)) {
+                    if (resourceStream == null) {
+                        throw new IllegalStateException("bundletool-all-1.15.6.jar not found in resources");
+                    }
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = resourceStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                }
+                if (!jarFile.exists()) {
+                    throw new IllegalStateException("bundletool JAR file not found: " + jarFile.getAbsolutePath());
+                }
+                File apks = new File(bundlePath.toFile().getParentFile(), "app.apks");
+                if (apks!=null && apks.exists()){
+                    apks.delete();
+                }
+                String outputPath = apks.getAbsolutePath();
+                // 构造命令
+                List<String> command = new ArrayList<>();
+                command.add("java");
+                command.add("-jar");
+                command.add(jarFile.getAbsolutePath());
+                command.add("build-apks");
+                command.add("--bundle=" + bundlePath);
+                command.add("--output=" + outputPath);
+                command.add("--mode=universal");
+                command.add("--ks=" + keyStore.storeFile.getAbsolutePath());
+                command.add("--ks-pass=pass:" + keyStore.storePassword);
+                command.add("--ks-key-alias=" + keyStore.keyAlias);
+                command.add("--key-pass=pass:" + keyStore.keyPassword);
+                // 执行命令
+                System.out.println("Executing command: " + String.join(" ", command));
+                ProcessBuilder processBuilder = new ProcessBuilder(command);
+                processBuilder.directory(getProject().getProjectDir()); // 设置工作目录
+                processBuilder.redirectErrorStream(true); // 合并标准输出和错误输出
+                Process process = processBuilder.start();
+                // 捕获输出
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                }
+
+                // 检查退出状态
+                int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    throw new RuntimeException("Command failed with exit code " + exitCode);
+                }
+                // 提取 APK 文件
+                File apksFile = new File(bundlePath.toFile().getParentFile(), "app.apks");
+                File zipFile = new File(bundlePath.toFile().getParentFile(), "app.zip");
+                if (zipFile!=null && zipFile.exists()){
+                    zipFile.delete();
+                }
+                if (!apksFile.renameTo(zipFile)){
+                    throw new IOException("Failed to rename .apks to .zip");
+                }
+                File outApk = new File(bundlePath.toFile().getParentFile(), "extracted-apks");
+                if (outApk!=null && outApk.exists()){
+                    outApk.delete();
+                }
+                if (zipFile.exists()) {
+                    // PowerShell 命令：解压 .zip 文件
+                    String powerShellCommand = String.format(
+                            "Expand-Archive -Path \"%s\" -DestinationPath \"%s\"",
+                            zipFile.getAbsolutePath(),
+                            outApk.getAbsolutePath()
+                    );
+
+                    // 执行提取 APK 的命令
+                    System.out.println("Executing extract-apks command: " + String.join(" ", powerShellCommand));
+                    ProcessBuilder extractProcessBuilder = new ProcessBuilder("powershell", "-Command", powerShellCommand);
+                    extractProcessBuilder.directory(getProject().getProjectDir());
+                    extractProcessBuilder.redirectErrorStream(true);
+                    Process extractProcess = extractProcessBuilder.start();
+
+                    // 捕获输出
+                    try (InputStream extractProcessInputStream = extractProcess.getInputStream()) {
+                        byte[] outputBuffer = new byte[4096];
+                        int read;
+                        while ((read = extractProcessInputStream.read(outputBuffer)) != -1) {
+                            System.out.write(outputBuffer, 0, read);
+                        }
+                    }
+
+                    // 检查提取过程的退出状态
+                    int extractExitCode = extractProcess.waitFor();
+                    if (extractExitCode != 0) {
+                        throw new RuntimeException("Extract command failed with exit code " + extractExitCode);
+                    }
+                }
+            }
+        }catch (Exception e){
+            throw new RuntimeException("Failed to execute generateApks task", e);
+        }
     }
 }

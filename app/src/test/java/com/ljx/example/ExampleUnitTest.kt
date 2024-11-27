@@ -3,7 +3,7 @@ package com.ljx.example
 import org.junit.Test
 
 import org.junit.Assert.*
-import test.TestUtil
+import test.BI
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -14,11 +14,11 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
-        val content = "        public void setProducts(Product... ps) {\n" +
+        val content = "        public void setProducts(BH... ps) {\n" +
                 "            this.id = id;\n" +
                 "        }\n"
-        val oldClassName = "Product"
+        val oldClassName = "BH"
         val newClassName = "AB"
-        TestUtil.match(content,oldClassName,newClassName)
+        BI.match(content,oldClassName,newClassName)
     }
 }

@@ -7,6 +7,11 @@ dir mapping:
 	com.ljx.example.pre -> e
 	com.ljx.example -> f
 	com.ljx.example.activity -> g
+	h -> i
+	d -> j
+	e -> k
+	f -> l
+	g -> m
 
 class mapping:
 	com.ljx.base.User -> a.A
@@ -24,3 +29,19 @@ class mapping:
 	com.ljx.base.bean.ABean -> h.M
 	com.ljx.base.bean.testBean -> h.N
 	com.ljx.example.entity.testBean -> b.O
+	h.L -> i.P
+	d.V -> j.Q
+	d.W -> j.S
+	e.Y -> k.T
+	f.Z -> l.U
+	g.BD -> m.V
+	com.ljx.base.bean.B -> h.W
+	com.ljx.example.entity.A -> b.X
+	com.ljx.example.entity.S -> b.Y
+	com.ljx.example.activity.Q -> g.Z
+	h.BI -> i.BA
+	h.BJ -> i.BB
+	e.X -> k.BC
+	f.BA -> l.BD
+	f.BB -> l.BE
+	f.BC -> l.BF

@@ -18,6 +18,12 @@ val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
 }
 
+//tasks.withType<Jar> {
+//    from("src/main/resources") {
+//        into("") // 确保 JAR 文件被打包进插件
+//    }
+//}
+
 val javadocJar by tasks.registering(Jar::class) {
     from(tasks.javadoc)
     archiveClassifier.set("javadoc")
@@ -66,7 +72,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = "com.overseas.reschiper"
-            version = "0.1.0-rc4"
+            version = "0.1.1"
             artifactId = "plugin"
             from(components["java"])
         }
