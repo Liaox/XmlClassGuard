@@ -239,6 +239,16 @@ public class ResChiperTask extends DefaultTask {
                 }
                 File outApk = new File(obfuscatedBundlePath.toFile().getParentFile(), "extracted-apks");
                 if (outApk!=null && outApk.exists()){
+                    if (outApk.isDirectory()){
+                        File[] child = outApk.listFiles();
+                        if (child!=null){
+                            for (File file : child) {
+                                if (file!=null){
+                                    file.delete();
+                                }
+                            }
+                        }
+                    }
                     outApk.delete();
                 }
                 if (zipFile.exists()) {
