@@ -191,7 +191,7 @@ public class ResChiperTask extends DefaultTask {
                 if (!jarFile.exists()) {
                     throw new IllegalStateException("bundletool JAR file not found: " + jarFile.getAbsolutePath());
                 }
-                File apks = new File(bundlePath.toFile().getParentFile(), "app.apks");
+                File apks = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.apks");
                 if (apks!=null && apks.exists()){
                     apks.delete();
                 }
@@ -202,7 +202,7 @@ public class ResChiperTask extends DefaultTask {
                 command.add("-jar");
                 command.add(jarFile.getAbsolutePath());
                 command.add("build-apks");
-                command.add("--bundle=" + bundlePath);
+                command.add("--bundle=" + obfuscatedBundlePath);
                 command.add("--output=" + outputPath);
                 command.add("--mode=universal");
                 command.add("--ks=" + keyStore.storeFile.getAbsolutePath());
@@ -229,15 +229,15 @@ public class ResChiperTask extends DefaultTask {
                     throw new RuntimeException("Command failed with exit code " + exitCode);
                 }
                 // 提取 APK 文件
-                File apksFile = new File(bundlePath.toFile().getParentFile(), "app.apks");
-                File zipFile = new File(bundlePath.toFile().getParentFile(), "app.zip");
+                File apksFile = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.apks");
+                File zipFile = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.zip");
                 if (zipFile!=null && zipFile.exists()){
                     zipFile.delete();
                 }
                 if (!apksFile.renameTo(zipFile)){
                     throw new IOException("Failed to rename .apks to .zip");
                 }
-                File outApk = new File(bundlePath.toFile().getParentFile(), "extracted-apks");
+                File outApk = new File(obfuscatedBundlePath.toFile().getParentFile(), "extracted-apks");
                 if (outApk!=null && outApk.exists()){
                     outApk.delete();
                 }
