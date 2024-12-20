@@ -20,7 +20,7 @@ publishing {
             from components.java
             groupId 'com.github.liujingxing'
             artifactId 'XmlClassGuard'
-            version "1.2.6-o"
+            version "1.2.6-x"
         }
     }
 }

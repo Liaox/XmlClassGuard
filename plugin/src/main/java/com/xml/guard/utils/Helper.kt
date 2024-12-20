@@ -21,7 +21,7 @@ private val packageNameBlackList = hashSetOf(
     "strictfp", "transient", "boolean", "volatile", "instanceof", "synchronized", "constructor"
 )
 
-private val classNameBlackList = hashSetOf("R", "BR")
+private val classNameBlackList = hashSetOf("R", "BR","X","Y","Z")
 
 
 fun String.inClassNameBlackList() = this in classNameBlackList

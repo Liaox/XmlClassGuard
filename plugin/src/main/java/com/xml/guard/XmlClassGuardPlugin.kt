@@ -63,9 +63,9 @@ class XmlClassGuardPlugin : Plugin<Project> {
         if (guardExt.findAabConstraintReferencedIds) {
             createAabFindConstraintReferencedIdsTask(variantName)
         }
-//        if (guardExt.findResChiperConstraintReferencedIds) {
+        if (guardExt.findResChiperConstraintReferencedIds) {
 //            createResChiperFindConstraintReferencedIdsTask(variantName)
-//        }
+        }
         var changeImageTask:Task? = null
         //需要修改图片文件md5.目前仅支持修改jpg或png。
         if (guardExt.changeImageMD5Count>0){
