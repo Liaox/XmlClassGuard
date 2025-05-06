@@ -111,7 +111,7 @@ open class XmlClassGuardWithMappingTask @Inject constructor(
             if (mapping.isObfuscated(classPath)) continue//todo jecky释义 包含了这个类
             //如果没有，就开始混淆
 //            println("没有被混淆的类：$classPath")
-            if (!mapping.isInMapping(classPath))continue//todo 作用：混淆指定的包路径下的类
+//            if (!mapping.isInMapping(classPath))continue//todo 作用：混淆指定的包路径下的类
             println("classPath : $classPath")
             if (whiteList.contains(classPath)){
                 println("[whiteList] path: $classPath")
