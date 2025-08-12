@@ -247,15 +247,25 @@ public class ResChiperTask extends DefaultTask {
 
                 // 根据操作系统选择解压方式
                 String osName = System.getProperty("os.name").toLowerCase();
+                System.out.println("osName: " + osName);
                 List<String> extractCommand = new ArrayList<>();
 
                 if (osName.contains("win")) {
+                    // Windows 解决方案: 将 .apks 重命名为 .zip 再解压
+                    File zipFile = new File(bundleDir, "app.zip");
+                    if (zipFile.exists()) {
+                        zipFile.delete();
+                    }
+                    // 重命名 .apks 为 .zip
+                    if (!apksFile.renameTo(zipFile)) {
+                        throw new IOException("Failed to rename .apks to .zip for Windows extraction");
+                    }
                     // Windows 使用 PowerShell
                     extractCommand.add("powershell");
                     extractCommand.add("-Command");
                     extractCommand.add(String.format(
                             "Expand-Archive -Path '%s' -DestinationPath '%s' -Force",
-                            apksFile.getAbsolutePath().replace("'", "''"),
+                            zipFile.getAbsolutePath().replace("'", "''"),
                             outApk.getAbsolutePath().replace("'", "''")
                     ));
                 } else {
