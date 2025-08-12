@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,9 +173,9 @@ public class ResChiperTask extends DefaultTask {
         return "****";
     }
 
-    private void aabToApk(KeyStore keyStore){
+    private void aabToApk(KeyStore keyStore) {
         try {
-            if (keyStore.storeFile!=null && keyStore.storeFile.exists()){
+            if (keyStore.storeFile != null && keyStore.storeFile.exists()) {
                 // 获取 bundletool-all-1.15.6.jar 的路径
                 File jarFile = new File(getProject().getBuildDir(), "bundletool-all-1.15.6.jar");
                 try (InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("bundletool-all-1.15.6.jar");
@@ -191,10 +192,13 @@ public class ResChiperTask extends DefaultTask {
                 if (!jarFile.exists()) {
                     throw new IllegalStateException("bundletool JAR file not found: " + jarFile.getAbsolutePath());
                 }
-                File apks = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.apks");
-                if (apks!=null && apks.exists()){
+
+                File bundleDir = obfuscatedBundlePath.toFile().getParentFile();
+                File apks = new File(bundleDir, "app.apks");
+                if (apks.exists()) {
                     apks.delete();
                 }
+
                 String outputPath = apks.getAbsolutePath();
                 // 构造命令
                 List<String> command = new ArrayList<>();
@@ -209,12 +213,14 @@ public class ResChiperTask extends DefaultTask {
                 command.add("--ks-pass=pass:" + keyStore.storePassword);
                 command.add("--ks-key-alias=" + keyStore.keyAlias);
                 command.add("--key-pass=pass:" + keyStore.keyPassword);
+
                 // 执行命令
                 System.out.println("Executing command: " + String.join(" ", command));
                 ProcessBuilder processBuilder = new ProcessBuilder(command);
                 processBuilder.directory(getProject().getProjectDir()); // 设置工作目录
                 processBuilder.redirectErrorStream(true); // 合并标准输出和错误输出
                 Process process = processBuilder.start();
+
                 // 捕获输出
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                     String line;
@@ -228,62 +234,78 @@ public class ResChiperTask extends DefaultTask {
                 if (exitCode != 0) {
                     throw new RuntimeException("Command failed with exit code " + exitCode);
                 }
+
                 // 提取 APK 文件
-                File apksFile = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.apks");
-                File zipFile = new File(obfuscatedBundlePath.toFile().getParentFile(), "app.zip");
-                if (zipFile!=null && zipFile.exists()){
-                    zipFile.delete();
-                }
-                if (!apksFile.renameTo(zipFile)){
-                    throw new IOException("Failed to rename .apks to .zip");
-                }
-                File outApk = new File(obfuscatedBundlePath.toFile().getParentFile(), "extracted-apks");
-                if (outApk!=null && outApk.exists()){
-                    if (outApk.isDirectory()){
-                        File[] child = outApk.listFiles();
-                        if (child!=null){
-                            for (File file : child) {
-                                if (file!=null){
-                                    file.delete();
-                                }
-                            }
-                        }
-                    }
-                    outApk.delete();
-                }
-                if (zipFile.exists()) {
-                    // PowerShell 命令：解压 .zip 文件
-                    String powerShellCommand = String.format(
-                            "Expand-Archive -Path \"%s\" -DestinationPath \"%s\"",
-                            zipFile.getAbsolutePath(),
-                            outApk.getAbsolutePath()
-                    );
+                File apksFile = new File(bundleDir, "app.apks");
+                File outApk = new File(bundleDir, "extracted-apks");
 
-                    // 执行提取 APK 的命令
-                    System.out.println("Executing extract-apks command: " + String.join(" ", powerShellCommand));
-                    ProcessBuilder extractProcessBuilder = new ProcessBuilder("powershell", "-Command", powerShellCommand);
-                    extractProcessBuilder.directory(getProject().getProjectDir());
-                    extractProcessBuilder.redirectErrorStream(true);
-                    Process extractProcess = extractProcessBuilder.start();
+                // 清理输出目录
+                if (outApk.exists()) {
+                    deleteDirectory(outApk);
+                }
+                Files.createDirectories(outApk.toPath());
 
-                    // 捕获输出
-                    try (InputStream extractProcessInputStream = extractProcess.getInputStream()) {
-                        byte[] outputBuffer = new byte[4096];
-                        int read;
-                        while ((read = extractProcessInputStream.read(outputBuffer)) != -1) {
-                            System.out.write(outputBuffer, 0, read);
-                        }
-                    }
+                // 根据操作系统选择解压方式
+                String osName = System.getProperty("os.name").toLowerCase();
+                List<String> extractCommand = new ArrayList<>();
 
-                    // 检查提取过程的退出状态
-                    int extractExitCode = extractProcess.waitFor();
-                    if (extractExitCode != 0) {
-                        throw new RuntimeException("Extract command failed with exit code " + extractExitCode);
+                if (osName.contains("win")) {
+                    // Windows 使用 PowerShell
+                    extractCommand.add("powershell");
+                    extractCommand.add("-Command");
+                    extractCommand.add(String.format(
+                            "Expand-Archive -Path '%s' -DestinationPath '%s' -Force",
+                            apksFile.getAbsolutePath().replace("'", "''"),
+                            outApk.getAbsolutePath().replace("'", "''")
+                    ));
+                } else {
+                    // Linux/macOS 使用 unzip
+                    extractCommand.add("unzip");
+                    extractCommand.add("-o");
+                    extractCommand.add(apksFile.getAbsolutePath());
+                    extractCommand.add("-d");
+                    extractCommand.add(outApk.getAbsolutePath());
+                }
+
+                // 执行提取命令
+                System.out.println("Executing extract-apks command: " + String.join(" ", extractCommand));
+                ProcessBuilder extractProcessBuilder = new ProcessBuilder(extractCommand);
+                extractProcessBuilder.directory(getProject().getProjectDir());
+                extractProcessBuilder.redirectErrorStream(true);
+                Process extractProcess = extractProcessBuilder.start();
+
+                // 捕获输出
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(extractProcess.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
                     }
+                }
+
+                // 检查提取过程的退出状态
+                int extractExitCode = extractProcess.waitFor();
+                if (extractExitCode != 0) {
+                    throw new RuntimeException("Extract command failed with exit code " + extractExitCode);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Failed to execute generateApks task", e);
+        }
+    }
+
+    // 递归删除目录的辅助方法
+    private void deleteDirectory(File directory) throws IOException {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
+            }
+        }
+        if (!directory.delete()) {
+            throw new IOException("Failed to delete: " + directory);
         }
     }
 }
