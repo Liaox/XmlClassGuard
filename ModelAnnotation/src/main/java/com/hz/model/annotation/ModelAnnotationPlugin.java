@@ -16,6 +16,7 @@ public class ModelAnnotationPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        System.out.println("addAnnotationTask agpVersion:"+AGPVersionUtils.isAGP83OrAbove(project));
         // 注册扩展，允许用户配置多个包名
         AnnotationConfig extension = project.getExtensions().create("annotationConfig", AnnotationConfig.class, project);
         if (project.getPlugins().hasPlugin(AppPlugin.class)){

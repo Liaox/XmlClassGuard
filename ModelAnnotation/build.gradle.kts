@@ -55,7 +55,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = "com.hz.model.annotation"
-            version = "1.0.1"
+            version = "1.0.4"
             artifactId = "plugin"
             from(components["java"])
         }

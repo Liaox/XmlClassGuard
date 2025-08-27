@@ -1,11 +1,10 @@
 package com.hz.model.annotation;
-import com.android.build.gradle.AppExtension;
 import com.android.build.gradle.AppPlugin;
 import com.android.build.gradle.LibraryPlugin;
+import com.android.builder.model.Version;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
-import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -25,7 +24,8 @@ public abstract class AddAnnotationTask extends DefaultTask {
     private String channel;
     @Inject
     public AddAnnotationTask(String variantName, AnnotationConfig extension){
-        this.buildType = variantName.toLowerCase();
+        //首字母小写，其他字母不变。
+        this.buildType = variantName.substring(0,1).toLowerCase()+variantName.substring(1);
         this.subPackagePaths = extension.getSubPackagePaths();
         this.channel = extension.getChannel();
         //暂不支持flavor配置。
@@ -84,9 +84,16 @@ public abstract class AddAnnotationTask extends DefaultTask {
 
     }
     private void processJavaDir(Project project, String annotationDesc){
+        //是否agp 8.3及以上
+        boolean is83OrAbove = AGPVersionUtils.isAGP83OrAbove(project);
         // 构建 classes 根目录
         File classRootDir = new File(project.getBuildDir().getAbsolutePath() +
                 "/intermediates/javac/" + (flavor.isEmpty() ? "" : (flavor + "/")) + buildType + "/classes");
+        if (is83OrAbove){
+            String buildType2 = buildType.substring(0,1).toUpperCase()+buildType.substring(1);
+            classRootDir = new File(project.getBuildDir().getAbsolutePath() +
+                    "/intermediates/javac/" + (flavor.isEmpty() ? "" : (flavor + "/")) + buildType + "/compile"+buildType2+"JavaWithJavac/classes");
+        }
         if (classRootDir.exists()) {
             for (String subPackage : subPackagePaths) {
                 System.out.println("processing package models:"+subPackage);
