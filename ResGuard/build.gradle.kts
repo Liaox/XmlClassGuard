@@ -72,7 +72,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             groupId = "com.overseas.reschiper"
-            version = "0.1.2"
+            version = "0.1.4"
             artifactId = "plugin"
             from(components["java"])
         }
